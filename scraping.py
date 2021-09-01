@@ -19,6 +19,7 @@ def scrape_all():
       "news_paragraph": news_paragraph,
       "featured_image": featured_image(browser),
       "facts": mars_facts(),
+      "hemispheres" : hemisphere(browser),
       "last_modified": dt.datetime.now()
     }
 
@@ -92,6 +93,42 @@ def mars_facts():
 
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
+
+# ### Hemispheres
+def hemisphere(browser):
+    # visit URL 
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+
+    # Create a list to hold the images and titles.
+    hemisphere_image_urls = []
+
+    html = browser.html
+    h_soup = soup(html, 'html.parser')
+
+    # retrieve the image urls and titles for each hemisphere.
+    # might need <'div', class_='item'> <a herf> <img class="thumb" src?>
+    #in case of errors
+    try:
+        for x in range(4):
+            hemisphere = {}
+            #find link to image
+            browser.find_by_css('a.itemLink.product-item h3')[x].click()
+            element = browser.find_by_text('Sample').first
+            img_url = element['href']
+            #get title
+            title = browser.find_by_css("h2.title").text
+            #add to hemisphere
+            hemisphere['img_url'] = img_url
+            hemisphere['title'] = title
+            #append to hemisphere urls
+            hemisphere_image_urls.append(hemisphere)
+            #go back and strat loop 
+            browser.back()
+    except BaseException:
+        return None
+    
+    return hemisphere_image_urls
 
 # block of code tells Flask that our script is complete and ready for action
 if __name__ == "__main__":
